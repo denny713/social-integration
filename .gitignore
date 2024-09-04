@@ -101,3 +101,4 @@ android/
 ios/
 *.keystore
 *.jks
+*.pem
