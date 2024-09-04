@@ -2,6 +2,8 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import Swal from "sweetalert2";
 import { logoutUser } from "../redux/userActions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 
 const MainPage = ({ user }) => {
     const dispatch = useDispatch();
@@ -12,7 +14,7 @@ const MainPage = ({ user }) => {
         Swal.fire({
             icon: 'info',
             title: 'Logged Out',
-            text: 'Goodbye!',
+            text: `Wassalamu'alaikum Wr Wb`,
         });
     };
 
@@ -22,7 +24,9 @@ const MainPage = ({ user }) => {
             <p>ID: {user.id}</p>
             <p>Username: {user.username}</p>
             <p>Name: {user.name}</p>
-            <button onClick={handleLogout}>Logout</button>
+            <button className="logout-button" onClick={handleLogout}>
+                <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+            </button>
         </div>
     );
 };

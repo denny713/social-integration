@@ -1,68 +1,53 @@
 import React from "react";
-import { useDispatch } from "react-redux";
-import axios from "axios";
-import Swal from "sweetalert2";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGoogle, faFacebook, faInstagram, faTwitter } from '@fortawesome/free-brands-svg-icons';
-import { loginUser } from "../redux/userActions";
+import { v4 as uuidv4 } from 'uuid';
 
 const SocialButton = ({ socialMedia }) => {
-    const dispatch = useDispatch();
-
     const handleLogin = () => {
-        let clientId;
+        let clientId, redirectPath, scope, authUrl;
+        let state = uuidv4();
+        sessionStorage.setItem('oauthState', state);
 
         switch (socialMedia) {
             case 'google':
-                clientId = process.env.GOOGLE_CLIENT_ID;
+                clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+                redirectPath = process.env.REACT_APP_GOOGLE_REDIRECT_URI;
+                scope = process.env.REACT_APP_GOOGLE_SCOPE;
+                authUrl = `https://accounts.google.com/o/oauth2/v2/auth?scope=${scope}&access_type=offline&redirect_uri=${redirectPath}&response_type=code&client_id=${clientId}&state=${state}`;
                 break;
             case 'facebook':
-                clientId = process.env.FACEBOOK_CLIENT_ID;
+                clientId = process.env.REACT_APP_FACEBOOK_CLIENT_ID;
+                redirectPath = process.env.REACT_APP_FACEBOOK_REDIRECT_URI;
+                scope = process.env.REACT_APP_FACEBOOK_SCOPE;
+                authUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectPath}&response_type=code`
                 break;
             case 'instagram':
-                clientId = process.env.INSTAGRAM_CLIENT_ID;
+                clientId = process.env.REACT_APP_INSTAGRAM_CLIENT_ID;
+                redirectPath = process.env.REACT_APP_INSTAGRAM_REDIRECT_URI;
+                scope = process.env.REACT_APP_INSTAGRAM_SCOPE;
+                authUrl = `https://api.instagram.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectPath}&scope=${scope}&response_type=code`;
                 break;
             case 'twitter':
-                clientId = process.env.TWITTER_CLIENT_ID;
+                localStorage.removeItem('codeChallenge');
+                clientId = process.env.REACT_APP_TWITTER_CLIENT_ID;
+                redirectPath = process.env.REACT_APP_TWITTER_REDIRECT_URI;
+                scope = process.env.REACT_APP_TWITTER_SCOPE;
+                state = Math.random().toString(36).substr(2, 10);
+
+                let codeChallenge = Math.random().toString(36).substr(2, 10);
+                let method = 'plain';
+
+                localStorage.setItem('codeChallenge', codeChallenge);
+                authUrl = `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectPath}&scope=${scope}&state=${state}&code_challenge=${codeChallenge}&code_challenge_method=${method}`;
                 break;
             default:
-                break;
+                return;
         }
 
-        axios.get(`/auth/${socialMedia}`, {
-            params: { client_id: clientId }
-        })
-        .then(response => {
-            const { authorizationCode } = response.data;
-
-            return axios.post(`/auth/${socialMedia}/token`, { authorizationCode });
-        })
-        .then(tokenResponse => {
-            const { accessToken } = tokenResponse.data;
-
-            return axios.get(`/auth/${socialMedia}/user`, {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            });
-        })
-        .then(userResponse => {
-            const userData = userResponse.data;
-            
-            dispatch(loginUser(userData));
-            localStorage.setItem("user", JSON.stringify(userData));
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Login Successful!',
-                text: `Welcome, ${userData.name}`,
-            });
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Login Failed',
-                text: 'Please try again!',
-            });
-        });
+        if (authUrl) {
+            window.location.href = authUrl;
+        }
     };
 
     const getIcon = () => {
@@ -75,18 +60,8 @@ const SocialButton = ({ socialMedia }) => {
         }
     };
 
-    const setButtonClass = () => {
-        switch (socialMedia) {
-            case 'google': return 'google';
-            case 'facebook': return 'facebook';
-            case 'instagram': return 'instagram';
-            case 'twitter': return 'twitter';
-            default: return null;
-        }
-    };
-
     return (
-        <button className={setButtonClass()} onClick={handleLogin}>
+        <button className={socialMedia} onClick={handleLogin}>
             <FontAwesomeIcon icon={getIcon()} /> Login with {socialMedia.charAt(0).toUpperCase() + socialMedia.slice(1)}
         </button>
     );
