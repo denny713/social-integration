@@ -223,7 +223,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Denny Agstin** - [denny713](https://github.com/denny713)
+**Denny Afrizal** - [denny713](https://github.com/denny713)
 
 ## 🙏 Acknowledgments
 
